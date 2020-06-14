@@ -1,0 +1,56 @@
+server:
+  port: 1929
+#mybatis-plus
+mybatis-plus:
+  configuration:
+    cache-enabled: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    db-column-underline: true
+    field-strategy: 0
+    id-type: 0
+    refresh-mapper: true
+  mapper-locations: classpath:/mapper/*.xml
+  typeAliasesPackage: com.leyou.entity
+
+#spring
+spring:
+  datasource:
+    driverClassName: com.mysql.jdbc.Driver
+    initialSize: 5
+    maxActive: 20
+    maxPoolPreparedStatementPerConnectionSize: 20
+    maxWait: 60000
+    minEvictableIdleTimeMillis: 300000
+    minIdle: 5
+    poolPreparedStatements: true
+    testOnBorrow: false
+    testOnReturn: false
+    testWhileIdle: true
+    timeBetweenEvictionRunsMillis: 60000
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://106.54.86.212:3306/es-demo?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&&useSSL=false
+    username: root
+    password: xqy666
+    validationQuery: SELECT 1 FROM DUAL
+  redis:
+    database: 1
+    host: 106.54.86.212
+    password: pass123456
+    port: 6379
+    timeout: 50s
+  resources:
+    static-locations: classpath:/public/,classpath:/static/
+fdfs:
+  so-timeout: 1501 # 超时时间
+  connect-timeout: 601 # 连接超时时间
+  thumb-image: # 缩略图
+    width: 50
+    height: 50
+  tracker-list: # tracker地址：你的虚拟机服务器地址+端口（默认是22122）
+  - 106.54.86.212:22122
+# jcasbin
+conf:
+  jcasbin:
+    modelPath: conf/rbac_model.conf

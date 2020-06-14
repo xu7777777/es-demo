@@ -1,0 +1,33 @@
+appName: es
+
+#server
+server:
+  max-http-header-size: 1000000
+  threads: 4
+  tomcat:
+    acceptCountg: 20
+    min-SpareThreads: 2
+    uri-encoding: UTF-8
+
+#spring
+spring:
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  messages:
+    encoding: UTF-8
+  profiles:
+    active: dev
+    include: integration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+  data:
+    elasticsearch:
+      repositories:
+        enabled: true
+      cluster-nodes: 106.54.86.212:9300
+      cluster-name: elasticsearch
