@@ -24,7 +24,8 @@ public interface EsProductDao {
             "       price, " +
             "       cur_price curPrice, " +
             "       sales_volume salesVolume, " +
-            "       intro " +
+            "       intro, " +
+            "       pic " +
             "   from goods g" +
             "       <where> "+
             "           <if test=\"id != null or id == ''\"> " +

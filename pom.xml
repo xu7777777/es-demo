@@ -97,6 +97,7 @@
             <artifactId>pagehelper</artifactId>
             <version>5.1.2</version>
         </dependency>
+
     </dependencies>
 
     <!-- Package as an executable jar -->

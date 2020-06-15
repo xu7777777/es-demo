@@ -2,6 +2,7 @@ package com.xqy.es.service;
 
 import com.xqy.es.entity.dto.EsProduct;
 import com.xqy.es.entity.dto.EsProductRelatedInfo;
+import com.xqy.es.entity.dto.KeyWord;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -50,4 +51,19 @@ public interface EsProductService {
      * 获取搜索词相关品牌、分类、属性
      */
     EsProductRelatedInfo searchRelatedInfo(String keyword);
+
+    /**
+     * 根据id获取指定商品
+     */
+    EsProduct detail(Long id);
+
+    /**
+     * 获取搜索时关键字
+     */
+    List<KeyWord> keywords();
+
+    /**
+     * 获取搜索记录
+     */
+    List<String> records();
 }

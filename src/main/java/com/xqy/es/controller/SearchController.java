@@ -1,6 +1,7 @@
 package com.xqy.es.controller;
 
 import com.xqy.es.entity.dto.EsProduct;
+import com.xqy.es.entity.dto.KeyWord;
 import com.xqy.es.entity.vo.CommonPage;
 import com.xqy.es.entity.vo.CommonResult;
 import com.xqy.es.service.EsProductService;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author xu7777777
@@ -46,4 +48,35 @@ public class SearchController {
         return CommonResult.success(count);
     }
 
+    /**
+     * 根据ID获取指定的商品
+     * @return result -> (code、message、data)
+     */
+    @RequestMapping(value = "/detail", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<EsProduct> detail(@RequestParam("id") Long id) {
+        EsProduct esProduct = esProductService.detail(id);
+        return CommonResult.success(esProduct);
+    }
+
+    /**
+     * 搜索时关键字
+     * @return List -> String
+     */
+    @RequestMapping(value = "/keywords", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<List<KeyWord>> keywords() {
+        List<KeyWord> keywords = esProductService.keywords();
+        return CommonResult.success(keywords);
+    }
+
+    /**
+     * 获取所有的搜索记录（暂不区分用户）
+     */
+    @RequestMapping(value = "/records", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<List<String>> records() {
+        List<String> records = esProductService.records();
+        return CommonResult.success(records);
+    }
 }
