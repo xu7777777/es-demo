@@ -1,6 +1,5 @@
 package com.xqy.es.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.xqy.es.dao.EsProductDao;
 import com.xqy.es.dao.KeyWordDao;
 import com.xqy.es.entity.consts.RedisConst;
@@ -10,11 +9,9 @@ import com.xqy.es.entity.dto.KeyWord;
 import com.xqy.es.repository.EsProductRepository;
 import com.xqy.es.service.EsProductService;
 import com.xqy.es.util.RedisUtil;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
-import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -25,6 +22,10 @@ import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import org.elasticsearch.search.suggest.Suggest;
+import org.elasticsearch.search.suggest.SuggestBuilder;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -128,60 +129,61 @@ public class EsProductServiceImpl implements EsProductService {
     }
 
     @Override
-    public Page<EsProduct> search(String keyword, Long brandId, Long productCategoryId, Integer pageNum, Integer pageSize, Integer sort) {
+    public Page<EsProduct> search(String keyword, Integer sort, Integer pageNum, Integer pageSize) {
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
         //分页
         nativeSearchQueryBuilder.withPageable(pageable);
         //过滤
-        if (brandId != null || productCategoryId != null) {
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            if (brandId != null) {
-                boolQueryBuilder.must(QueryBuilders.termQuery("brandId", brandId));
-            }
-            if (productCategoryId != null) {
-                boolQueryBuilder.must(QueryBuilders.termQuery("productCategoryId", productCategoryId));
-            }
-            nativeSearchQueryBuilder.withFilter(boolQueryBuilder);
-        }
+//        if (brandId != null || productCategoryId != null) {
+//            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+//            if (brandId != null) {
+//                boolQueryBuilder.must(QueryBuilders.termQuery("brandId", brandId));
+//            }
+//            if (productCategoryId != null) {
+//                boolQueryBuilder.must(QueryBuilders.termQuery("productCategoryId", productCategoryId));
+//            }
+//            nativeSearchQueryBuilder.withFilter(boolQueryBuilder);
+//        }
         //搜索
-        if (StringUtils.isEmpty(keyword)) {
-            nativeSearchQueryBuilder.withQuery(QueryBuilders.matchAllQuery());
-        } else {
-            List<FunctionScoreQueryBuilder.FilterFunctionBuilder> filterFunctionBuilders = new ArrayList<>();
-            filterFunctionBuilders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("name", keyword),
-                    ScoreFunctionBuilders.weightFactorFunction(10)));
-            filterFunctionBuilders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("subTitle", keyword),
-                    ScoreFunctionBuilders.weightFactorFunction(5)));
-            filterFunctionBuilders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("keywords", keyword),
-                    ScoreFunctionBuilders.weightFactorFunction(2)));
-            FunctionScoreQueryBuilder.FilterFunctionBuilder[] builders = new FunctionScoreQueryBuilder.FilterFunctionBuilder[filterFunctionBuilders.size()];
-            filterFunctionBuilders.toArray(builders);
-            FunctionScoreQueryBuilder functionScoreQueryBuilder = QueryBuilders.functionScoreQuery(builders);
-//                    .scoreMode(FunctionScoreQuery.SUM)
-//                    .setMinScore(2);
-            nativeSearchQueryBuilder.withQuery(functionScoreQueryBuilder);
-        }
+//        if (StringUtils.isEmpty(keyword)) {
+//            nativeSearchQueryBuilder.withQuery(QueryBuilders.matchAllQuery());
+//        } else {
+//            List<FunctionScoreQueryBuilder.FilterFunctionBuilder> filterFunctionBuilders = new ArrayList<>();
+//            filterFunctionBuilders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("name", keyword),
+//                    ScoreFunctionBuilders.weightFactorFunction(10)));
+//            filterFunctionBuilders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("subTitle", keyword),
+//                    ScoreFunctionBuilders.weightFactorFunction(5)));
+//            filterFunctionBuilders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("keywords", keyword),
+//                    ScoreFunctionBuilders.weightFactorFunction(2)));
+//            FunctionScoreQueryBuilder.FilterFunctionBuilder[] builders = new FunctionScoreQueryBuilder.FilterFunctionBuilder[filterFunctionBuilders.size()];
+//            filterFunctionBuilders.toArray(builders);
+//            FunctionScoreQueryBuilder functionScoreQueryBuilder = QueryBuilders.functionScoreQuery(builders);
+////                    .scoreMode(FunctionScoreQuery.SUM)
+////                    .setMinScore(2);
+//            nativeSearchQueryBuilder.withQuery(functionScoreQueryBuilder);
+//        }
         //排序
         if (sort == 1) {
             //按新品从新到旧
             nativeSearchQueryBuilder.withSort(SortBuilders.fieldSort("id").order(SortOrder.DESC));
         } else if (sort == 2) {
             //按销量从高到低
-            nativeSearchQueryBuilder.withSort(SortBuilders.fieldSort("sale").order(SortOrder.DESC));
+            nativeSearchQueryBuilder.withSort(SortBuilders.fieldSort("curPrice").order(SortOrder.DESC));
         } else if (sort == 3) {
             //按价格从低到高
-            nativeSearchQueryBuilder.withSort(SortBuilders.fieldSort("price").order(SortOrder.ASC));
+            nativeSearchQueryBuilder.withSort(SortBuilders.fieldSort("salesVolume").order(SortOrder.DESC));
         } else if (sort == 4) {
             //按价格从高到低
-            nativeSearchQueryBuilder.withSort(SortBuilders.fieldSort("price").order(SortOrder.DESC));
+            nativeSearchQueryBuilder.withSort(SortBuilders.fieldSort("curPrice").order(SortOrder.ASC));
         } else {
             //按相关度
             nativeSearchQueryBuilder.withSort(SortBuilders.scoreSort().order(SortOrder.DESC));
         }
-        nativeSearchQueryBuilder.withSort(SortBuilders.scoreSort().order(SortOrder.DESC));
+
+        nativeSearchQueryBuilder.withQuery(QueryBuilders.matchQuery("title", keyword).minimumShouldMatch("75%"));
+        nativeSearchQueryBuilder.withSort(SortBuilders.scoreSort().order(SortOrder.ASC));
         NativeSearchQuery searchQuery = nativeSearchQueryBuilder.build();
-        LOGGER.info("DSL:{}", searchQuery.getQuery().toString());
         return productRepository.search(searchQuery);
     }
 
@@ -280,6 +282,56 @@ public class EsProductServiceImpl implements EsProductService {
             return records;
         }
         return null;
+    }
+
+    @Override
+    public List<String> complete(String prefix) {
+
+        //指定在哪个字段搜索
+        String suggestField = "title.suggest";
+        //获得最大suggest条数
+        final int suggestMaxCount = 12;
+
+        CompletionSuggestionBuilder suggestionBuilderDistrict = new CompletionSuggestionBuilder(suggestField).prefix(prefix).size(suggestMaxCount);
+        SuggestBuilder suggestBuilder = new SuggestBuilder();
+        //添加suggest
+        suggestBuilder.addSuggestion("mall_suggest", suggestionBuilderDistrict);
+
+        //设置查询builder的index,type,以及建议
+        SearchRequestBuilder requestBuilder = this.elasticsearchTemplate.getClient().prepareSearch("mall-goods").setTypes("_doc").suggest(suggestBuilder);
+        System.out.println(requestBuilder.toString());
+
+        SearchResponse response = requestBuilder.get();
+        //suggest实体
+        Suggest suggest = response.getSuggest();
+
+        //list
+        ArrayList<String> suggests = new ArrayList<>();
+        if (suggest != null) {
+            //获取suggest,name任意string
+            Suggest.Suggestion result = suggest.getSuggestion("mall_suggest");
+            for (Object term : result.getEntries()) {
+
+                if (term instanceof CompletionSuggestion.Entry) {
+                    CompletionSuggestion.Entry item = (CompletionSuggestion.Entry) term;
+                    if (!item.getOptions().isEmpty()) {
+                        //若item的option不为空,循环遍历
+                        for (CompletionSuggestion.Entry.Option option : item.getOptions()) {
+                            String tip = option.getText().toString();
+                            if (suggest.size() > suggestMaxCount) {
+                                break;
+                            }
+                            if (!suggests.contains(tip)) {
+                                suggests.add(tip);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        suggests.forEach(System.out::println);
+
+        return suggests;
     }
 
     /**

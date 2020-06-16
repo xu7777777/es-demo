@@ -40,7 +40,7 @@ public interface EsProductService {
     /**
      * 根据关键字搜索名称或者副标题复合查询
      */
-    Page<EsProduct> search(String keyword, Long brandId, Long productCategoryId, Integer pageNum, Integer pageSize, Integer sort);
+    Page<EsProduct> search(String keyword, Integer sort, Integer pageNum, Integer pageSize);
 
     /**
      * 根据商品id推荐相关商品
@@ -66,4 +66,9 @@ public interface EsProductService {
      * 获取搜索记录
      */
     List<String> records();
+
+    /**
+     * 补全用户搜索
+     */
+    List<String> complete(String prefix);
 }

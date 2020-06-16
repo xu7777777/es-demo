@@ -37,6 +37,16 @@ public class SearchController {
         return CommonResult.success(CommonPage.restPage(esProductPage));
     }
 
+    @RequestMapping(value = "/search", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<CommonPage<EsProduct>> search(@RequestParam(required = false) String name,
+                                                      @RequestParam(required = false, defaultValue = "0") Integer pageNum,
+                                                      @RequestParam(required = false, defaultValue = "1000") Integer pageSize,
+                                                      @RequestParam(required = false, defaultValue = "0") Integer sort) {
+        Page<EsProduct> esProductPage = esProductService.search(name, sort, pageNum, pageSize);
+        return CommonResult.success(CommonPage.restPage(esProductPage));
+    }
+
     /**
      * 数据库商品信息导入到ES
      * @return result -> (code、message、data)
@@ -79,4 +89,16 @@ public class SearchController {
         List<String> records = esProductService.records();
         return CommonResult.success(records);
     }
+
+
+    /**
+     * 补全用户搜索
+     */
+    @RequestMapping(value = "/complete", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<List<String>> complete(@RequestParam("prefix") String prefix) {
+        List<String> completes = esProductService.complete(prefix);
+        return CommonResult.success(completes);
+    }
+
 }
