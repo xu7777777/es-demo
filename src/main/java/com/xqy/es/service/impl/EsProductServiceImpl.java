@@ -130,6 +130,19 @@ public class EsProductServiceImpl implements EsProductService {
 
     @Override
     public Page<EsProduct> search(String keyword, Integer sort, Integer pageNum, Integer pageSize) {
+        // about redis for search records
+        String obj = redisUtil.get(RedisConst.SEARCH_RECORDS_KEY);
+        if (!StringUtils.isEmpty(keyword)) {
+            if (!StringUtils.isEmpty(obj) && !"".equals(obj) && !"null".equals(obj)) {
+                List<String> result = new ArrayList<>(Arrays.asList(obj.split(";;;")));
+                if (!result.contains(keyword)) {
+                    result.add(keyword);
+                }
+                redisUtil.set(RedisConst.SEARCH_RECORDS_KEY, String.join(";;;", result));
+            } else {
+                redisUtil.set(RedisConst.SEARCH_RECORDS_KEY, keyword);
+            }
+        }
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
         //分页

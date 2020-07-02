@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.xqy.es.MallSearchApplicationTests
 -------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 38.39 s - in com.xqy.es.MallSearchApplicationTests
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 38.581 s - in com.xqy.es.MallSearchApplicationTests
