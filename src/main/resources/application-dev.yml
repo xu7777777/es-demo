@@ -1,5 +1,5 @@
 server:
-  port: 1929
+  port: 8929
 #mybatis-plus
 mybatis-plus:
   configuration:
